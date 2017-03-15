@@ -23,17 +23,21 @@ export default class App extends React.Component<Everything, {}> {
     setTimeout(() => {
       if (!this.props.sync.loaded) {
         this.props.dispatch({ type: "SYNC_TIMEOUT_EXCEEDED" });
-        alert(TIMEOUT_MESSAGE);
+        // alert(TIMEOUT_MESSAGE);
       }
-    }, 10000);
+    }, 4000);
   }
 
   render() {
     let syncLoaded = this.props.sync.loaded;
+    let epic = syncLoaded ? " fadedis " : " ";
+    // let ohnoes = setTimeout(() => "true", 2000);
     return <div className="app">
-      <NavBar { ...this.props } />
-      {!syncLoaded && <Spinner radius={33} strokeWidth={6} />}
-      {syncLoaded && this.props.children}
+      <NavBar { ...this.props } faaade={syncLoaded} />
+      {/*<Spinner fadeOut={syncLoaded} radius={33} strokeWidth={6} />*/}
+      {/*<div className={"app-children-container " + epic}>*/}
+      {this.props.children}
+      {/*</div>*/}
     </div>;
   }
 }

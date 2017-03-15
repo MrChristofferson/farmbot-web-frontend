@@ -4,13 +4,15 @@ interface SpinnerProps {
   /** Radius of the spinner in pixels. */
   radius: number;
   strokeWidth: number;
+  fadeOut: boolean;
 }
 
 // TODO: Keep accurate proportions when scaling up or down
 export class Spinner extends React.Component<SpinnerProps, {}> {
   render() {
-    let { radius, strokeWidth } = this.props;
-    return <div className="spinner-container">
+    let { radius, strokeWidth, fadeOut } = this.props;
+    let epic = fadeOut ? "fade" : "";
+    return <div className={"spinner-container " + epic}>
       <svg className="spinner"
         width={`${radius * 2}px`}
         height={`${radius * 2}px`}

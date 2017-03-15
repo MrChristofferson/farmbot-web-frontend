@@ -1,0 +1,98 @@
+// .app-children-container {
+//     filter: blur(16px);
+//     transition: all 0.4s ease;
+.all-content-wrapper {
+    animation: bringin 0.4s ease-in;
+    .row> {
+        div:nth-child(1n) {
+            background: blue;
+        }
+        div:nth-child(2n) {
+            background: brown;
+        }
+        div:nth-child(3n) {
+            background: yellow;
+        }
+    }
+}
+
+//     }
+// }
+// .fadedis {
+//     filter: blur(0px);
+//     transition: all 1s ease;
+// }
+// .nav-wrapper {
+//     animation: bringin 2s ease-in;
+//     filter: blur(6px);
+//     transition: all 0.4s ease;
+//     &.fadedis {
+//         filter: blur(0px);
+//         transition: all 1s ease;
+//     }
+// }
+@keyframes bringin {
+    0% {
+        opacity: 0;
+    }
+    // 70% {
+    //     opacity: 0.2;
+    // }
+    // 80% {
+    //     opacity: 0.3;
+    // }
+    // 90% {
+    //     opacity: 0.4;
+    // }
+    100% {
+        opacity: 1;
+    }
+}
+
+.herro {
+    display: none;
+}
+
+.active {
+    .herro {
+        animation: innout 3s infinite linear;
+        transform-origin: center;
+        display: block;
+        &:after {
+            position: absolute;
+            content: "";
+            left: 0;
+            top: 0;
+            background: pink;
+            width: 50px;
+            height: 50px;
+        }
+    }
+}
+
+@keyframes innout {
+    0% {
+        transform: rotate(0deg); // scale(1);
+    }
+    50% {
+        transform: rotate(180deg); // scale(1.2);
+    }
+    100% {
+        transform: rotate(360deg); // scale(1);
+    }
+}
+
+.zoomer {
+    position: fixed;
+    right: 4rem;
+    top: 12rem;
+    display: flex;
+    flex-direction: column;
+    background: #d9ead3;
+    button {
+        font-size: 1.8rem !important;
+        &:last-of-type {
+            margin-top: 1rem;
+        }
+    }
+}

@@ -44,7 +44,7 @@ export let syncReducer = generateReducer<Sync>(initialState)
   })
   .add<Sync>("FETCH_SYNC_OK", function (s, a) {
     s = a.payload;
-    s.loaded = true;
+    // s.loaded = false;
     return s;
   })
   .add<{}>("SYNC_TIMEOUT_EXCEEDED", function (s, a) {

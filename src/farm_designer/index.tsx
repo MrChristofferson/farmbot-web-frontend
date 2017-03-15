@@ -7,6 +7,42 @@ import { Link } from "react-router";
 import { t } from "i18next";
 import { IndexProps } from "./interfaces";
 
+export class Zoomer extends React.Component<any, any> {
+  constructor() {
+    super();
+    this.state = { currentNum: 1 }
+  }
+  in = () => {
+    console.log("in");
+    this.setState({ currentNum: this.state.currentNum + 0.1 }, () => {
+      let el = document.querySelector(".farm-designer-map") as HTMLElement;
+      console.log(this.state.currentNum);
+
+      el.style.cssText = `zoom: ${this.state.currentNum}`;
+    })
+  }
+
+  out = () => {
+    console.log("out");
+    this.setState({ currentNum: this.state.currentNum - 0.1 }, () => {
+      let el = document.querySelector(".farm-designer-map") as HTMLElement;
+      el.style.zoom = this.state.currentNum.toString();
+    });
+
+  }
+
+  render() {
+    return <div className="zoomer">
+      <button onClick={this.in} className="button-like green">
+        <i className="fa fa-plus" />
+      </button>
+      <button onClick={this.out} className="button-like red">
+        <i className="fa fa-minus" />
+      </button>
+    </div>;
+  }
+}
+
 @connect((state: Everything) => state)
 export class FarmDesigner extends React.Component<IndexProps, {}> {
   componentDidMount() {
@@ -26,6 +62,7 @@ export class FarmDesigner extends React.Component<IndexProps, {}> {
 
     return (
       <div className="farm-designer">
+        <Zoomer />
         <div className="panel-header gray-panel designer-mobile-nav">
           <div className="panel-tabs">
             <Link to="/app/designer" className="mobile-only active">

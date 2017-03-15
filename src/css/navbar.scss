@@ -57,14 +57,44 @@ nav {
     a {
         padding: 1.8rem 1rem;
         color: $gray !important;
+        position: relative;
+        // transition: all 0.4s ease;
+        // &:before {
+        //     width: 50%;
+        //     position: absolute;
+        //     left: 0;
+        //     height: 5px;
+        //     background: $dark_gray;
+        //     bottom: -3px;
+        //     content: "";
+        //     transition: all 0.4s ease;
+        // }
+        // &:after {
+        //     width: 50%;
+        //     position: absolute;
+        //     right: 0;
+        //     height: 5px;
+        //     background: $dark_gray;
+        //     bottom: -3px;
+        //     content: "";
+        //     transition: all 0.4s ease;
+        // }
         &:hover {
             color: $white !important;
             font-weight: bold;
+            // transition: all 0.2s ease;
         }
         &.active {
             color: $white !important;
-            border-bottom: 3px solid $white;
             font-weight: bold;
+            // transition: all 0.4s ease;
+            border-bottom: 3px solid $white;
+            // &:before {
+            //     transform: translateX(-100%);
+            // }
+            // &:after {
+            //     transform: translateX(100%);
+            // }
         }
     }
     .nav-dropdown {

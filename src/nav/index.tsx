@@ -55,8 +55,12 @@ let links = [
   { name: "Tools", icon: "wrench", url: "/app/tools" }
 ];
 
+interface Yep extends Everything {
+  faaade: boolean;
+}
+
 @connect((state: Everything) => state)
-export class NavBar extends React.Component<Everything, NavBarState> {
+export class NavBar extends React.Component<Yep, NavBarState> {
   constructor() {
     super();
     this.state = {
@@ -80,12 +84,13 @@ export class NavBar extends React.Component<Everything, NavBarState> {
   }
 
   render() {
+    let disthing = this.props.faaade ? " fadedis " : ""
     let mobileMenuClass = this.state.mobileNavExpanded ? "expanded" : "";
     // The way our app is laid out, we'll pretty much always want this bit.
     let pageName = this.props.location.pathname.split("/")[2] || "";
     let { toggleNav, logout } = this;
 
-    return <div className="nav-wrapper">
+    return <div className={"nav-wrapper " + disthing}>
       <nav role="navigation">
         <button
           className="mobile-and-tablet-only"

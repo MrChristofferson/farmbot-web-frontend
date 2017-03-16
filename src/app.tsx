@@ -1,7 +1,7 @@
 import * as React from "react";
 import { NavBar } from "./nav";
 import { Everything } from "./interfaces";
-import { init } from "./ui";
+import { init, error } from "./ui";
 import { connect } from "react-redux";
 import { Spinner } from "./spinner";
 
@@ -23,7 +23,7 @@ export default class App extends React.Component<Everything, {}> {
     setTimeout(() => {
       if (!this.props.sync.loaded) {
         this.props.dispatch({ type: "SYNC_TIMEOUT_EXCEEDED" });
-        // alert(TIMEOUT_MESSAGE);
+        error(TIMEOUT_MESSAGE, "Warning");
       }
     }, 4000);
   }

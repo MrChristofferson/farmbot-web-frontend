@@ -89,7 +89,6 @@ export class GardenMap extends React.Component<GardenMapProps, GardenMapState> {
     let dropper = (id: number) => {
       dispatch(savePlantById(id));
     };
-
     return <div className="drop-area"
       id="drop-area"
       onDrop={this.handleDrop.bind(this)}
@@ -100,10 +99,11 @@ export class GardenMap extends React.Component<GardenMapProps, GardenMapState> {
           return <GardenPoint point={p} key={p.id} />;
         })}
         {
-          this.props.sync.plants.map((p, inx) => {
+          this.props.designer.deprecatedPlants.map((p, inx) => {
+            let { pathname } = this.props.location;
             if (p.id) {
-              let isActive = parseInt(this.props.params.plant_id) === p.id ?
-                "active" : "";
+              let isActive = (pathname.includes(p.id.toString()) &&
+                pathname.includes("edit")) ? "active" : "";
 
               return <Link to={`/app/designer/plants/${p.id}`}
                 className={`plant-link-wrapper ` + isActive.toString()}

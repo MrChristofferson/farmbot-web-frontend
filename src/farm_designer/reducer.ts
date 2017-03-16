@@ -27,10 +27,9 @@ export let designer = generateReducer<DesignerState>(DEFAULT_STATE)
     return s;
   })
   .add<Plant>("DESTROY_PLANT_OK", function (s, { payload }) {
-    let state = cloneDeep(s);
-    let a = state.deprecatedPlants;
-    a.splice(a.indexOf(payload), 0);
-    return state;
+    let index = _.findIndex(s.deprecatedPlants, { id: payload });
+    s.deprecatedPlants.splice(index, 1);
+    return s;
   })
   .add<HardwareState>("BOT_CHANGE", function (s, { payload }) {
     let state = cloneDeep(s);

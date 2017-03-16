@@ -21,13 +21,13 @@ export class GardenPlant extends React.Component<GardenPlantProps,
       return <g>
         <g className="herro">
           <circle
-            cx={plant.x - 2}
-            cy={plant.y + 43}
+            cx={plant.x}
+            cy={plant.y}
             strokeWidth={3}
             fill="none"
             stroke="green"
-            strokeDasharray={120}
-            r={25} />
+            strokeDasharray={8}
+            r={plant.radius} />
         </g>
         <circle className="map-plant-spread"
           cx={plant.x}

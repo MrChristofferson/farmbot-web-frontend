@@ -135,8 +135,17 @@
 
 .plant-link-wrapper {
     position: relative;
+    cursor: default;
     image {
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    &.active image {
         cursor: -webkit-grab !important;
+        -webkit-user-drag: auto;
+        -webkit-user-select: all;
+        user-select: all;
         &:active {
             cursor: -webkit-grabbing !important;
         }
@@ -223,8 +232,8 @@
     }
 }
 
-.map-plant-spread{
-  fill: $green;
-  opacity: 0.1;
-  pointer-events: none;
+.map-plant-spread {
+    fill: $green;
+    opacity: 0.1;
+    pointer-events: none;
 }

@@ -25,7 +25,7 @@ function OptionComponent(plants: Plant[]) {
       <img className="plant-search-item-image" src={DEFAULT_ICON} />
       <span className="plant-search-item-name">{props.label}</span>
       <i className="plant-search-item-age">
-        {daysOld} days old</i>
+        {daysOld} {t("days old")}</i>
     </div>;
   };
 }
@@ -33,12 +33,12 @@ function OptionComponent(plants: Plant[]) {
 @connect((state: Everything) => state)
 export class Plants extends React.Component<Everything, {}> {
 
-  handleRedirect(e: DropDownItem) {
+  handleRedirect = (e: DropDownItem) => {
     this.props.router.push(`/app/designer/plants/` + e.value);
   }
 
   render() {
-    let { plants } = this.props.sync;
+    let plants = this.props.designer.deprecatedPlants;
 
     let plantOptions = plants.map(plant => {
       if (plant.id) {
@@ -69,7 +69,7 @@ export class Plants extends React.Component<Everything, {}> {
           <i className="fa fa-search"></i>
           <FBSelect list={plantOptions}
             optionComponent={OptionComponent(this.props.sync.plants)}
-            onChange={this.handleRedirect.bind(this)}
+            onChange={this.handleRedirect}
             isOpen={true}
             placeholder="Search Plants"
           />

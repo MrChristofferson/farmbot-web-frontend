@@ -26,6 +26,7 @@ export class SpeciesInfo extends React.Component<SpeciesInfoProps, {}> {
   findCrop(slug?: string) {
     let crops = this.props.designer.cropSearchResults;
     let crop = _(crops).find((result) => result.crop.slug === slug);
+
     return crop || {
       crop: {
         binomial_name: "binomial_name",

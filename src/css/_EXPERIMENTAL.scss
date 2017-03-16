@@ -55,30 +55,21 @@
 
 .active {
     .herro {
-        animation: innout 3s infinite linear;
+        animation: innout 3.8s infinite linear;
         transform-origin: center;
         display: block;
-        &:after {
-            position: absolute;
-            content: "";
-            left: 0;
-            top: 0;
-            background: pink;
-            width: 50px;
-            height: 50px;
-        }
     }
 }
 
 @keyframes innout {
     0% {
-        transform: rotate(0deg); // scale(1);
+        transform: rotate(0deg) scale(1);
     }
     50% {
-        transform: rotate(180deg); // scale(1.2);
+        transform: rotate(180deg) scale(1.2);
     }
     100% {
-        transform: rotate(360deg); // scale(1);
+        transform: rotate(360deg) scale(1);
     }
 }
 

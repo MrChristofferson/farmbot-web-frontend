@@ -43,18 +43,18 @@ export interface WeedDetectorENV {
   iterations: number;
 }
 
-export interface DetectorState extends WeedDetectorENV {
+export interface DetectorState {
   isEditing: boolean;
   deletionProgress: string;
   settingsMenuOpen: boolean;
+  /** Defined only if the bot is online AND its been setup */
+  remoteFarmwareSettings: Partial<WeedDetectorENV>;
 }
 
 export interface FarmbotPickerProps {
   h: [number, number];
   s: [number, number];
   v: [number, number];
-  hsv: { h: number, s: number, v: number };
-  hsl: { h: number, s: number, l: number };
 }
 
 export interface EnvSliderProps {

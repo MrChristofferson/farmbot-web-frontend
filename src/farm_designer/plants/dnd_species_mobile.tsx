@@ -11,6 +11,10 @@ import {
   DraggableEvent
 } from "../interfaces";
 
+const NOOP = (a: object, b: number, c: number) => {
+  console.log("NO DND SUPPORT ON THIS BROWSER");
+};
+
 @connect((state: Everything) => state)
 /** DND => "drag and drop" */
 export class DNDSpeciesMobile extends React.Component<SpeciesInfoProps,
@@ -26,12 +30,8 @@ DNDSpeciesMobileState> {
     // Stub until we figure out dynamic drag images
     img.src = DEFAULT_ICON;
 
-    e
-      && e.dataTransfer
-      // Because of Android
-      && e.dataTransfer.setDragImage
-      // Because of MS Edge.
-      && e.dataTransfer.setDragImage(img, 50, 50);
+    // Because of Android and MS Edge.
+    _.get(e, "dataTransfer.setDragImage", NOOP)(img, 50, 50);
   }
 
   toggleDesignerView() {

@@ -220,4 +220,13 @@ export interface DraggableSvgImageProps {
   href: string;
 }
 
+export interface OFSearchProps {
+  dispatch: Function;
+  designer: DesignerState;
+  query: string;
+}
+
+export interface OFSearchState {
+  results: CropLiveSearchResult[];
+}
 

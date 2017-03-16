@@ -1,284 +1,122 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { Everything } from "../interfaces";
-import { t } from "i18next";
-import { FarmbotPicker } from "./farmbot_picker";
-import { DetectorState } from "./interfaces";
-import { ImageFlipper } from ".";
+import { DetectorState, WeedDetectorENV } from "./interfaces";
+import { WeedDetectorBody } from "./weed_detector_body";
+import { TitleBar } from "./weed_detector_title";
 import { devices } from "../device";
-import { HsvSlider } from "./hsv_slider";
-import { BlurableInput } from "../ui/blurable_input";
-import { Pair } from "farmbot";
-import {
-  success,
-  error,
-  FBSelect,
-  Col,
-  Row,
-  DropDownItem,
-  Widget,
-  WidgetHeader,
-  WidgetBody
-} from "../ui";
+import { success, error } from "../ui/index";
+import { t } from "i18next";
 import { resetWeedDetection } from "./actions";
-import { weedDetectorENVsafeFetch } from "./weed_detector_env";
 import { Progress } from "../util";
-
-const DETECTOR_ENV = "PLANT_DETECTION_options";
+import { Pair } from "farmbot/dist";
+import { HSV } from "./index";
+const PLANT_DETECTION_OPTIONS_KEY = "PLANT_DETECTION_options";
 
 @connect((state: Everything) => state)
 export class WeedDetector extends React.Component<Everything, Partial<DetectorState>> {
   constructor() {
     super();
-    this.setHSV = this.setHSV.bind(this);
-    this.test = this.test.bind(this);
-    this.resetWeedDetection = this.resetWeedDetection.bind(this);
-    this.sendOffConfig = this.sendOffConfig.bind(this);
-    this.state = {
-      isEditing: true,
-      blur: 15,
-      morph: 6,
-      iterations: 4,
-      deletionProgress: "",
-      settingsMenuOpen: false
-    };
+    this.state = { remoteFarmwareSettings: {} };
   }
 
-  get env() {
-    return this.props.bot.hardware.user_env[DETECTOR_ENV];
+  /** Attempts to deserialize data on the device.
+   * Returns {} as Partial<WeedDetectorENV> if anything goes wrong. */
+  get optionsOnDevice(): Partial<WeedDetectorENV> {
+    let { user_env } = this.props.bot.hardware;
+    let jsonString = user_env[PLANT_DETECTION_OPTIONS_KEY] || "{}";
+    try { return JSON.parse(jsonString) } catch (e) { return {}; }
+  }
+
+  get farmwareSettings() {
+    return { ...this.optionsOnDevice, ...this.state.remoteFarmwareSettings };
   }
 
   componentDidMount() {
-    this.setState(weedDetectorENVsafeFetch(this.env));
+    const IS_ONLINE = !!this
+      .props
+      .bot
+      .hardware
+      .user_env["LAST_CLIENT_CONNECTED"];
+    const NEEDS_SETUP = !!this.optionsOnDevice;
+    let remoteFarmwareSettings = this.farmwareSettings;
+    (IS_ONLINE && NEEDS_SETUP) ?
+      this.saveSettings() : this.setState({ remoteFarmwareSettings });
   }
 
-  resetWeedDetection() {
-    this.props.dispatch(resetWeedDetection(this.progress));
+  takePhoto = () => {
+    let ok = () => success(t("Processing now. Refresh page to see result."));
+    let no = () => error("Error taking photo");
+    devices.current.takePhoto().then(ok, no);
+  }
+
+  clearWeeds = () => {
+    let progress = (p: Readonly<Progress>) => {
+      let percentage = `${Math.round((p.completed / p.total) * 100)} %`;
+      this.setState({ deletionProgress: p.isDone ? "" : percentage });
+    };
+    this.props.dispatch(resetWeedDetection(progress));
     this.setState({ deletionProgress: "Deleting..." });
   }
 
-  progress = (p: Readonly<Progress>) => {
-    let prg = p.isDone ? "" : `${Math.round((p.completed / p.total) * 100)} %`;
-    this.setState({ deletionProgress: prg });
-  }
-
-  sendOffConfig() {
-    let message = { [DETECTOR_ENV]: JSON.stringify(this.state) };
-    devices
-      .current
-      .setUserEnv(message);
-  }
-
-  takePhoto() {
-    devices
-      .current
-      .takePhoto()
-      .then(function () {
-        success("Request sent. The image will be available after post processing.");
-      },
-      function () {
-        error("Unable to snap a photo. Is FarmBot online?");
-      });
-  }
-
-  onBlur(key: keyof DetectorState) {
-    return (e: React.FormEvent<HTMLInputElement>) => {
-      let str = e.currentTarget.value;
-      let num = parseInt(str, 10);
-      if (!_.isNaN(num)) {
-        if (key === "blur" && ((num % 2) === 0)) {
-          alert("Blur must be an odd number.");
-        } else {
-          return this.setState({ [key]: num });
-        }
-      }
+  saveSettings = () => {
+    let nextEnv = {
+      [PLANT_DETECTION_OPTIONS_KEY]: JSON.stringify(this.farmwareSettings)
     };
-  }
 
-  setHSV(key: "H" | "S" | "V", val: [number, number]) {
-    this.setState({ [key]: val });
-  }
+    let ok = () => success(t("Settings saved."));
+    let no = () => error(t("Settings NOT saved."));
 
-  test() {
-    var that = this;
-    let pairs = Object
-      .keys(this.state)
-      .map<Pair>(function (value: keyof DetectorState, index) {
-        return {
-          kind: "pair",
-          args: { value, label: JSON.stringify(that.state[value]) || "null" }
-        };
-      });
-
-    devices
-      .current
-      .execScript("plant-detection", pairs);
+    devices.current.setUserEnv(nextEnv).then(ok, no);
   }
 
   toggleSettingsMenu = () => {
     this.setState({ settingsMenuOpen: !this.state.settingsMenuOpen });
   }
 
-  additionalSettingsMenu = () => {
-    let calibrationAxes: DropDownItem[] = [
-      { label: "X", value: "x" }, { label: "Y", value: "y" }
-    ];
+  sliderChange = (key: keyof HSV<"">, values: [number, number]) => {
+    let oldSettings = this.farmwareSettings;
+    let newSettings = { [key]: values };
+    let remoteFarmwareSettings = { ...oldSettings, ...newSettings };
+    this.setState({ remoteFarmwareSettings });
+  }
 
-    let originLocations: DropDownItem[] = [
-      { label: "Top Left", value: "top_left" },
-      { label: "Top Right", value: "top_right" },
-      { label: "Bottom Left", value: "bottom_left" },
-      { label: "Bottom Right", value: "bottom_right" }
-    ];
-
-    return <div className="additional-settings-menu"
-      onClick={(e) => e.stopPropagation()}>
-      {/* This menu needs to be nested in the <i> for css purposes. However,
-        * we do not want events in here to bubble up to the toggle method. */}
-      <label htmlFor="invert_hue_selection">
-        {t(`Invert Hue Range Selection`)}
-      </label>
-      <input type="checkbox" id="invert_hue_selection" />
-      <label htmlFor="calibration_object_separation">
-        {t(`Calibration Object Separation`)}
-      </label>
-      <input type="number" id="calibration_object_separation"
-        placeholder="(Number)" />
-      <label htmlFor="calibration_object_separation_axis">
-        {t(`Calibration Object Separation along axis`)}
-      </label>
-      <FBSelect
-        list={calibrationAxes}
-        placeholder="Select..."
-        id="calibration_object_separation_axis" />
-      <Row>
-        <Col xs={6}>
-          <label htmlFor="camera_offset_x">
-            {t(`Camera Offset X`)}
-          </label>
-          <input type="number" id="camera_offset_x" placeholder="(Number)" />
-        </Col>
-        <Col xs={6}>
-          <label htmlFor="camera_offset_y">
-            {t(`Camera Offset Y`)}
-          </label>
-          <input type="number" id="camera_offset_y" placeholder="(Number)" />
-        </Col>
-      </Row>
-      <label htmlFor="image_bot_origin_location">
-        {t(`Origin Location in Image`)}
-      </label>
-      <FBSelect
-        list={originLocations}
-        placeholder="Select..."
-        id="image_bot_origin_location" />
-      <Row>
-        <Col xs={6}>
-          <label htmlFor="coord_scale">
-            {t(`Pixel coordinate scale`)}
-          </label>
-          <input type="number" id="coord_scale"
-            placeholder="(Number)" step={0.10} />
-        </Col>
-        <Col xs={6}>
-          <label htmlFor="total_rotation_angle">
-            {t(`Camera rotation`)}
-          </label>
-          <input type="number" id="total_rotation_angle" placeholder="(Number)" />
-        </Col>
-      </Row>
-    </div>;
-  };
+  test = () => {
+    let that = this;
+    let settings = this.farmwareSettings;
+    let pairs = Object
+      .keys(settings)
+      .map<Pair>(function (value: keyof typeof settings, index) {
+        let label = JSON.stringify(settings[value]) || "null";
+        return { kind: "pair", args: { value, label } };
+      });
+    devices.current.execScript("plant-detection", pairs);
+  }
 
   render() {
-    let H = (this.state.H || [0, 0]);
-    let S = (this.state.S || [0, 0]);
-    let V = (this.state.V || [0, 0]);
-
-    return <Widget className="weed-detector-widget">
-      <WidgetHeader title="Weed Detector" helpText="Detect Weeds.">
-        <button onClick={this.sendOffConfig.bind(this)}
-          className="green button-like">
-          {t("SAVE")}
-        </button>
-        <button
-          onClick={this.test}
-          className="yellow button-like">
-          {t("TEST")}
-        </button>
-        <button
-          className="gray button-like"
-          onClick={this.takePhoto.bind(this)}>
-          {t("Take Photo")}
-        </button>
-        <button onClick={this.resetWeedDetection}
-          className="red button-like">
-          {this.state.deletionProgress || t("CLEAR WEEDS")}
-        </button>
-        {/* TODO: Hook up calibration */}
-        <button onClick={() => { }}
-          className="green button-like">
-          {t("Calibrate")}
-        </button>
-        <i className="fa fa-cog" onClick={this.toggleSettingsMenu}>
-          {this.state.settingsMenuOpen && this.additionalSettingsMenu()}
-        </i>
-      </WidgetHeader>
-      <WidgetBody>
-        <Row>
-          <Col xs={12} md={6}>
-            <h4>
-              <i>{t("Color Range")}</i>
-            </h4>
-            <label htmlFor="hue">{t("HUE")}</label>
-            <HsvSlider name={"H"} env={this.state} onChange={this.setHSV} />
-            <label htmlFor="saturation">{t("SATURATION")}</label>
-            <HsvSlider name={"S"} env={this.state} onChange={this.setHSV} />
-            <label htmlFor="value">{t("VALUE")}</label>
-            <HsvSlider name={"V"} env={this.state} onChange={this.setHSV} />
-          </Col>
-          <Col xs={12} md={6}>
-            <FarmbotPicker h={H} s={S} v={V}
-              hsv={{ h: ((H[1] * 2 + H[0] * 2) / 2), s: 0, v: 0 }}
-              hsl={{ h: ((H[1] * 2 + H[0] * 2) / 2), s: 0, l: 0 }} />
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={12}>
-            <h4>
-              <i>{t("Processing Parameters")}</i>
-            </h4>
-          </Col>
-
-          <Col xs={4}>
-            <label>{t("BLUR")}</label>
-            <BlurableInput type="number"
-              min={0}
-              max={100}
-              onCommit={this.onBlur("blur")}
-              value={(this.state.blur || 0).toString()} />
-          </Col>
-
-          <Col xs={4}>
-            <label>{t("MORPH")}</label>
-            <BlurableInput type="number"
-              min={0}
-              max={100}
-              onCommit={this.onBlur("morph")}
-              value={(this.state.morph || 0).toString()} />
-          </Col>
-
-          <Col xs={4}>
-            <label>{t("Iteration")}</label>
-            <BlurableInput type="number"
-              min={0}
-              max={100}
-              onCommit={this.onBlur("iterations")}
-              value={(this.state.iterations || 0).toString()} />
-          </Col>
-        </Row>
-        <ImageFlipper images={this.props.sync.images} />
-      </WidgetBody>
-    </Widget>;
+    return <div>
+      <div className="widget-wrapper weed-detector-widget">
+        <div className="row">
+          <div className="col-sm-12">
+            <TitleBar onDeletionClick={this.clearWeeds}
+              deletionProgress={this.state.deletionProgress}
+              onPhotoClick={this.takePhoto}
+              onSave={this.saveSettings}
+              onSettingToggle={this.toggleSettingsMenu}
+              onTest={this.test}
+              settingsMenuOpen={!!this.state.settingsMenuOpen} />
+            <div className="row">
+              <div className="col-sm-12">
+                <WeedDetectorBody images={this.props.sync.images}
+                  onSliderChange={this.sliderChange}
+                  H={this.farmwareSettings.H}
+                  S={this.farmwareSettings.S}
+                  V={this.farmwareSettings.V} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>;
   }
 }

@@ -84,3 +84,12 @@
         }
     }
 }
+
+@media only screen and (min-width: 568px) and (max-width: 830px) {
+    .additional-settings-menu {
+        right: -2rem;
+        &:after {
+            right: 2rem;
+        }
+    }
+}
